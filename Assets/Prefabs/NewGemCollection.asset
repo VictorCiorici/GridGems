@@ -12,5 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29f301a6a113b7948b667d17774cbc25, type: 3}
   m_Name: NewGemCollection
   m_EditorClassIdentifier: Assembly-CSharp::GridGame.Config.GemCollection
-  gemVisuals: []
+  gemVisuals:
+  - {fileID: 11400000, guid: 936f6dc7dcb9dae4499546c3d00414a7, type: 2}
+  - {fileID: 11400000, guid: e1fd15bd169e20c488ddc05df59cd7c2, type: 2}
+  - {fileID: 11400000, guid: e1fd15bd169e20c488ddc05df59cd7c2, type: 2}
+  - {fileID: 11400000, guid: 349275682f55e1f43933542752eda444, type: 2}
   defaultVisual: {fileID: 0}

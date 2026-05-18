@@ -16,14 +16,22 @@ namespace GridGame.Controller
         [SerializeField] private Button restartButton;
         [SerializeField] private GameObject winScreenPanel;
 
+        private Action _onRestart;
+
         /// <summary>
         /// Binds the restart action to the restart button. Call once during setup.
         /// </summary>
         /// <param name="onRestart">Callback invoked when the restart button is pressed.</param>
         public void Bind(Action onRestart)
         {
+            _onRestart = onRestart;
             restartButton.onClick.RemoveAllListeners();
-            restartButton.onClick.AddListener(() => onRestart?.Invoke());
+            restartButton.onClick.AddListener(HandleRestartClicked);
+        }
+
+        private void HandleRestartClicked()
+        {
+            _onRestart?.Invoke();
         }
 
         /// <summary>
@@ -34,10 +42,14 @@ namespace GridGame.Controller
         public void Refresh(GameState state, GameProgress progress)
         {
             if (progressText != null)
+            {
                 progressText.text = $"Gems Found: {progress.Found} / {progress.Total}";
+            }
 
             if (winScreenPanel != null)
+            {
                 winScreenPanel.SetActive(state == GameState.Won);
+            }
         }
     }
 }

@@ -45,8 +45,15 @@ namespace GridGame.Domain
         /// <param name="idGenerator">Strategy for generating gem IDs.</param>
         public GridSystem(int width, int height, IIdGenerator idGenerator)
         {
-            if (width  <= 0) throw new ArgumentOutOfRangeException(nameof(width),  "Grid width must be greater than zero.");
-            if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height), "Grid height must be greater than zero.");
+            if (width <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "Grid width must be greater than zero.");
+            }
+
+            if (height <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height), "Grid height must be greater than zero.");
+            }
 
             _idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
 
@@ -55,17 +62,23 @@ namespace GridGame.Domain
             Cells  = new CellNode[width, height];
 
             for (int x = 0; x < width; x++)
+            {
                 for (int y = 0; y < height; y++)
                 {
                     Cells[x, y] = new CellNode(new GridCoordinate(x, y));
                     Cells[x, y].OnStateChanged += _ => OnGridChanged?.Invoke();
                 }
+            }
         }
 
         /// <summary>Gets the cell at the specified coordinates, or <c>null</c> if out of bounds.</summary>
         public CellNode GetCell(int x, int y)
         {
-            if (x < 0 || x >= Width || y < 0 || y >= Height) return null;
+            if (x < 0 || x >= Width || y < 0 || y >= Height)
+            {
+                return null;
+            }
+
             return Cells[x, y];
         }
 
@@ -82,8 +95,16 @@ namespace GridGame.Domain
                 for (int dy = 0; dy < height; dy++)
                 {
                     CellNode cell = GetCell(origin.X + dx, origin.Y + dy);
-                    if (cell == null)    return PlacementResult.Fail("Gem extends outside grid bounds.");
-                    if (cell.IsOccupied) return PlacementResult.Fail("One or more cells are already occupied.");
+                    if (cell == null)
+                    {
+                        return PlacementResult.Fail("Gem extends outside grid bounds.");
+                    }
+
+                    if (cell.IsOccupied)
+                    {
+                        return PlacementResult.Fail("One or more cells are already occupied.");
+                    }
+
                     targetCells.Add(cell);
                 }
             }

@@ -34,27 +34,34 @@ namespace GridGame.Controller
 
         // Tracks the active grid for progress queries
         private GridSystem _currentGrid;
+        private System.Action<GridGame.Domain.GemEntity> _onGemFoundHandler;
 
         private void Awake()
         {
-            _stateManager         = new GameStateManager();
-            _revealCellUseCase    = new RevealCellUseCase(_stateManager);
-            _startNewGameUseCase  = new StartNewGameUseCase(_stateManager, new AllGemsFoundWinCondition(), new GuidIdGenerator());
+            _stateManager = new GameStateManager();
+            _revealCellUseCase = new RevealCellUseCase(_stateManager);
+            _startNewGameUseCase = new StartNewGameUseCase(_stateManager, new AllGemsFoundWinCondition(), new GuidIdGenerator());
 
             _stateManager.OnStateChanged += OnGameStateChanged;
+            _onGemFoundHandler = _ => RefreshUI();
             gridInputHandler.Setup(_revealCellUseCase);
             gridView.OnCellViewSpawned += gridInputHandler.RegisterCell;
             uiController.Bind(StartNewGame);
         }
 
-        private void Start() => StartNewGame();
+        private void Start()
+        {
+            StartNewGame();
+        }
 
         /// <summary>
         /// Starts or restarts the game by executing the StartNewGame use case.
         /// </summary>
         public void StartNewGame()
         {
+            UnsubscribeFromCurrentGrid();
             _currentGrid = _startNewGameUseCase.Execute(CreateGenerator());
+            _currentGrid.OnGemFound += _onGemFoundHandler;
             gridView.Initialize(_currentGrid, gemCollection);
             RefreshUI();
         }
@@ -62,26 +69,46 @@ namespace GridGame.Controller
         private ILevelGenerator CreateGenerator()
         {
             if (gameMode == GameMode.Predefined && levelData != null)
+            {
                 return new PredefinedLevelGenerator(levelData);
+            }
 
             return new ProceduralLevelGenerator(defaultWidth, defaultHeight, gemCollection);
         }
 
-        private void OnGameStateChanged(GameState _) => RefreshUI();
+        private void OnGameStateChanged(GameState _) 
+        {
+            RefreshUI();
+        }
 
         private void RefreshUI()
         {
+            if (_currentGrid == null) return;
             var progress = new GameProgress(_currentGrid.FoundGemsCount, _currentGrid.TotalGemsCount);
             uiController.Refresh(_stateManager.Current, progress);
         }
 
+        private void UnsubscribeFromCurrentGrid()
+        {
+            if (_currentGrid != null)
+            {
+                _currentGrid.OnGemFound -= _onGemFoundHandler;
+            }
+        }
+
         private void OnDestroy()
         {
+            UnsubscribeFromCurrentGrid();
+
             if (_stateManager != null)
+            {
                 _stateManager.OnStateChanged -= OnGameStateChanged;
+            }
 
             if (gridView != null)
+            {
                 gridView.OnCellViewSpawned -= gridInputHandler.RegisterCell;
+            }
         }
     }
 }

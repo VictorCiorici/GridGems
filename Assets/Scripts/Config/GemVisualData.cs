@@ -31,9 +31,20 @@ namespace GridGame.Config
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (width < 1)  { width  = 1; UnityEngine.Debug.LogWarning($"GemVisualData '{name}': width clamped to 1.", this); }
-            if (height < 1) { height = 1; UnityEngine.Debug.LogWarning($"GemVisualData '{name}': height clamped to 1.", this); }
-            if (sprite == null) UnityEngine.Debug.LogWarning($"GemVisualData '{name}': Sprite is not assigned.", this);
+            if (width < 1)
+            {
+                width = 1;
+                UnityEngine.Debug.LogWarning($"GemVisualData '{name}': width clamped to 1.", this);
+            }
+            if (height < 1)
+            {
+                height = 1;
+                UnityEngine.Debug.LogWarning($"GemVisualData '{name}': height clamped to 1.", this);
+            }
+            if (sprite == null)
+            {
+                UnityEngine.Debug.LogWarning($"GemVisualData '{name}': Sprite is not assigned.", this);
+            }
         }
 #endif
     }

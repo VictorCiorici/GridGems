@@ -35,14 +35,18 @@ namespace GridGame.Config
             foreach (var config in gemVisuals)
             {
                 if (config != null && config.width == width && config.height == height)
-                    return (config.sprite, false);
+                    {
+                        return (config.sprite, false);
+                    }
             }
 
             // 2. Check for swapped match (rotated)
             foreach (var config in gemVisuals)
             {
                 if (config != null && config.canRotate && config.width == height && config.height == width)
+                {
                     return (config.sprite, true);
+                }
             }
 
             // 3. Fallback to default
@@ -64,7 +68,9 @@ namespace GridGame.Config
                     var a = gemVisuals[i];
                     var b = gemVisuals[j];
                     if (b != null && a.width == b.width && a.height == b.height)
+                    {
                         UnityEngine.Debug.LogWarning($"GemCollection '{name}': duplicate size {a.width}x{a.height} at indices [{i}] and [{j}].", this);
+                    }
                 }
             }
         }

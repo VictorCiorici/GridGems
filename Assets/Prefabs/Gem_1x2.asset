@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridGame.Config.GemVisualData
   height: 1
   width: 2
-  sprite: {fileID: 21300000, guid: 0c1273f54b472be49bbcc1b2f7c722f6, type: 3}
+  sprite: {fileID: 21300000, guid: e72b5a1071087184485d0f5eb5cf3af7, type: 3}
+  canRotate: 1

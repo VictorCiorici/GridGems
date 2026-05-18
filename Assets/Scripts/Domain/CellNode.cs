@@ -53,7 +53,10 @@ namespace GridGame.Domain
         /// </summary>
         public void Reveal()
         {
-            if (State == CellState.Revealed) return;
+            if (State == CellState.Revealed)
+            {
+                return;
+            }
 
             State = CellState.Revealed;
             OnStateChanged?.Invoke(this);

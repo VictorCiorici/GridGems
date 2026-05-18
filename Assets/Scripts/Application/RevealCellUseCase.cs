@@ -27,8 +27,16 @@ namespace GridGame.Application
         /// <param name="node">The cell node to reveal.</param>
         public void Execute(CellNode node)
         {
-            if (node == null) return;
-            if (_stateManager.Current != GameState.Playing) return;
+            if (node == null)
+            {
+                return;
+            }
+
+            if (_stateManager.Current != GameState.Playing)
+            {
+                return;
+            }
+
             node.Reveal();
         }
     }

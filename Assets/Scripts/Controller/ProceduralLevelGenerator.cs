@@ -29,10 +29,17 @@ namespace GridGame.Controller
         /// <param name="gemCollection">The collection of gems to place.</param>
         public ProceduralLevelGenerator(int gridWidth, int gridHeight, GemCollection gemCollection)
         {
-            if (gridWidth <= 0) throw new ArgumentOutOfRangeException(nameof(gridWidth));
-            if (gridHeight <= 0) throw new ArgumentOutOfRangeException(nameof(gridHeight));
+            if (gridWidth <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(gridWidth));
+            }
 
-            GridWidth = gridWidth;
+            if (gridHeight <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(gridHeight));
+            }
+
+            GridWidth  = gridWidth;
             GridHeight = gridHeight;
             _gemCollection = gemCollection;
         }
@@ -57,7 +64,11 @@ namespace GridGame.Controller
                     int rx = UnityEngine.Random.Range(0, GridWidth);
                     int ry = UnityEngine.Random.Range(0, GridHeight);
                     var result = gridSystem.TryPlaceGem(width, height, new GridCoordinate(rx, ry));
-                    if (result.Success) placed = true;
+                    if (result.Success)
+                    {
+                        placed = true;
+                    }
+
                     attempts++;
                 }
             }

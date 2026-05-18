@@ -55,13 +55,25 @@ namespace GridGame.Domain
         /// <param name="cells">The cells this gem occupies.</param>
         public GemEntity(string id, int width, int height, List<CellNode> cells)
         {
-            if (string.IsNullOrEmpty(id)) throw new ArgumentException("Id must not be null or empty.", nameof(id));
-            if (width <= 0)  throw new ArgumentOutOfRangeException(nameof(width));
-            if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
-            if (cells == null || cells.Count == 0) throw new ArgumentException("Cells must not be null or empty.", nameof(cells));
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException("Id must not be null or empty.", nameof(id));
+            }
+            if (width <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width));
+            }
+            if (height <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
+            if (cells == null || cells.Count == 0)
+            {
+                throw new ArgumentException("Cells must not be null or empty.", nameof(cells));
+            }
 
-            Id     = id;
-            Width  = width;
+            Id = id;
+            Width = width;
             Height = height;
 
             BindCells(cells);
@@ -87,16 +99,26 @@ namespace GridGame.Domain
 
         private void HandleCellStateChanged(CellNode node)
         {
-            if (IsFound) return;
+            if (IsFound)
+            {
+                return;
+            }
 
             if (node.State == CellState.Revealed)
+            {
                 _revealedCount++;
+            }
 
-            if (_revealedCount < OccupiedCells.Count) return;
+            if (_revealedCount < OccupiedCells.Count)
+            {
+                return;
+            }
 
             IsFound = true;
             foreach (var cell in OccupiedCells)
+            {
                 cell.OnStateChanged -= HandleCellStateChanged;
+            }
 
             OnGemFound?.Invoke(this);
         }

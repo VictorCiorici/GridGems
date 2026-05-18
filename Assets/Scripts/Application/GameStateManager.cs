@@ -25,7 +25,9 @@ namespace GridGame.Application
         public void StartGame(GridSystem grid, IWinCondition winCondition)
         {
             if (_grid != null)
+            {
                 _grid.OnGemFound -= HandleGemFound;
+            }
 
             _grid = grid ?? throw new ArgumentNullException(nameof(grid));
             _winCondition = winCondition ?? throw new ArgumentNullException(nameof(winCondition));
@@ -36,14 +38,24 @@ namespace GridGame.Application
 
         private void HandleGemFound(GemEntity _)
         {
-            if (Current != GameState.Playing) return;
+            if (Current != GameState.Playing)
+            {
+                return;
+            }
+
             if (_winCondition.IsWon(_grid))
+            {
                 TransitionTo(GameState.Won);
+            }
         }
 
         private void TransitionTo(GameState newState)
         {
-            if (Current == newState) return;
+            if (Current == newState)
+            {
+                return;
+            }
+
             Current = newState;
             OnStateChanged?.Invoke(newState);
         }

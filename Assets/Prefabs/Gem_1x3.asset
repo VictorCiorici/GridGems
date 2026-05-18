@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8b1fb874769bed448cbcdb2ca757ecc, type: 3}
   m_Name: Gem_1x3
   m_EditorClassIdentifier: Assembly-CSharp::GridGame.Config.GemVisualData
-  width: 1
   height: 1
-  sprite: {fileID: 21300000, guid: 0c1273f54b472be49bbcc1b2f7c722f6, type: 3}
+  width: 3
+  sprite: {fileID: 21300000, guid: 8e3388ad7f56717448ee29180fb860ac, type: 3}
+  canRotate: 1

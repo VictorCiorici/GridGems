@@ -47,7 +47,9 @@ namespace GridGame.Presentation
         private void ClearChildren()
         {
             foreach (Transform child in transform)
+            {
                 Destroy(child.gameObject);
+            }
         }
 
         private void SpawnCells(GridSystem gridSystem)
@@ -118,7 +120,10 @@ namespace GridGame.Presentation
         private void FitCamera(GridSystem gridSystem)
         {
             Camera cam = targetCamera != null ? targetCamera : Camera.main;
-            if (cam == null) return;
+            if (cam == null)
+            {
+                return;
+            }
 
             cam.transform.position = new Vector3(
                 (gridSystem.Width  - 1) * cellSize * 0.5f,
@@ -134,12 +139,17 @@ namespace GridGame.Presentation
         private void OnValidate()
         {
             if (targetCamera == null)
+            {
                 Debug.LogWarning("GridView: 'Target Camera' is not assigned. Camera.main will be used as fallback.", this);
+            }
         }
 
         private void OnDrawGizmos()
         {
-            if (_gridSystem == null) return;
+            if (_gridSystem == null)
+            {
+                return;
+            }
             float halfCell = cellSize * 0.5f;
 
             Gizmos.color = Color.gray;
@@ -161,7 +171,10 @@ namespace GridGame.Presentation
             Gizmos.color = Color.green;
             foreach (var gem in _gridSystem.ActiveGems)
             {
-                if (gem.OccupiedCells.Count == 0) continue;
+                if (gem.OccupiedCells.Count == 0)
+                {
+                    continue;
+                }
                 Vector3 center = GetGemPosition(gem);
                 Vector3 size   = new Vector3(gem.Width * cellSize - gizmoShrink, gem.Height * cellSize - gizmoShrink, 0.1f);
                 Gizmos.DrawWireCube(transform.TransformPoint(center), size);

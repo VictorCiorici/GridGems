@@ -2,7 +2,6 @@ namespace GridGame.Domain
 {
     /// <summary>
     /// The result of a <see cref="GridSystem.TryPlaceGem"/> call.
-    /// Replaces nullable return values with a self-documenting result type.
     /// </summary>
     public readonly struct PlacementResult
     {

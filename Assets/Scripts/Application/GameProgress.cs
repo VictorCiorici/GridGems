@@ -13,7 +13,18 @@ namespace GridGame.Application
         public int Total { get; }
 
         /// <summary>Completion percentage in the range [0, 1].</summary>
-        public float Percentage => Total == 0 ? 0f : (float)Found / Total;
+        public float Percentage
+        {
+            get
+            {
+                if (Total == 0)
+                {
+                    return 0f;
+                }
+
+                return (float)Found / Total;
+            }
+        }
 
         /// <summary>
         /// Initializes a new <see cref="GameProgress"/> snapshot.

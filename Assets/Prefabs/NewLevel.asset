@@ -14,4 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridGame.Config.LevelData
   gridWidth: 6
   gridHeight: 6
-  gems: []
+  gems:
+  - width: 0
+    height: 0
+    origin: {x: 0, y: 0}
+  - width: 0
+    height: 0
+    origin: {x: 0, y: 0}
