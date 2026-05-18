@@ -23,6 +23,23 @@ namespace GridGame.Config
         /// The list of gems placed on this level.
         /// </summary>
         public List<GemPlacementData> gems = new List<GemPlacementData>();
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            for (int i = 0; i < gems.Count; i++)
+            {
+                var gem = gems[i];
+                if (gem == null) continue;
+                if (gem.origin.x < 0 || gem.origin.x + gem.width  > gridWidth ||
+                    gem.origin.y < 0 || gem.origin.y + gem.height > gridHeight)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        $"LevelData '{name}': gem [{i}] ({gem.width}x{gem.height} at {gem.origin}) extends outside the grid ({gridWidth}x{gridHeight}).", this);
+                }
+            }
+        }
+#endif
     }
 
     /// <summary>

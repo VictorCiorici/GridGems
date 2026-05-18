@@ -48,5 +48,26 @@ namespace GridGame.Config
             // 3. Fallback to default
             return (defaultVisual != null ? defaultVisual.sprite : null, false);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            for (int i = 0; i < gemVisuals.Count; i++)
+            {
+                if (gemVisuals[i] == null)
+                {
+                    UnityEngine.Debug.LogWarning($"GemCollection '{name}': entry [{i}] is null.", this);
+                    continue;
+                }
+                for (int j = i + 1; j < gemVisuals.Count; j++)
+                {
+                    var a = gemVisuals[i];
+                    var b = gemVisuals[j];
+                    if (b != null && a.width == b.width && a.height == b.height)
+                        UnityEngine.Debug.LogWarning($"GemCollection '{name}': duplicate size {a.width}x{a.height} at indices [{i}] and [{j}].", this);
+                }
+            }
+        }
+#endif
     }
 }

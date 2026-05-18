@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using GridGame.Domain;
 using GridGame.Config;
@@ -5,8 +6,9 @@ using GridGame.Config;
 namespace GridGame.Presentation
 {
     /// <summary>
-    /// Manages the generation and positioning of cell and gem views.
-    /// Depends on <see cref="IGemSpriteResolver"/> rather than a concrete asset type.
+    /// Pure visual component. Spawns and positions cell and gem views.
+    /// Raises <see cref="OnCellViewSpawned"/> per cell so that a dedicated input handler
+    /// can subscribe without <see cref="GridView"/> knowing anything about input or domain interaction.
     /// </summary>
     public class GridView : MonoBehaviour
     {
@@ -25,10 +27,14 @@ namespace GridGame.Presentation
         private GridSystem _gridSystem;
 
         /// <summary>
-        /// Initializes the grid view based on the domain grid system.
+        /// Raised for each <see cref="CellView"/> spawned during <see cref="Initialize"/>.
+        /// Subscribe before calling Initialize to receive all spawned cells.
         /// </summary>
-        /// <param name="gridSystem">The domain grid system.</param>
-        /// <param name="spriteResolver">Resolves sprites for gem sizes.</param>
+        public event Action<CellView> OnCellViewSpawned;
+
+        /// <summary>
+        /// Initializes the grid view. Clears any existing children, then spawns cells and gems.
+        /// </summary>
         public void Initialize(GridSystem gridSystem, IGemSpriteResolver spriteResolver)
         {
             _gridSystem = gridSystem;
@@ -56,7 +62,7 @@ namespace GridGame.Presentation
                     CellView cellView = Instantiate(cellPrefab, transform);
                     cellView.transform.localPosition = new Vector3(x * cellSize, y * cellSize, 0f);
                     cellView.Setup(node);
-                    cellView.OnCellClicked += HandleCellClicked;
+                    OnCellViewSpawned?.Invoke(cellView);
                 }
             }
         }
@@ -96,20 +102,15 @@ namespace GridGame.Presentation
         private void ApplyGemScale(GemView gemView, GemEntity gem, Sprite gemSprite, bool needsRotation)
         {
             if (gemSprite == null) return;
-
             Vector2 spriteSize = gemSprite.bounds.size;
             if (spriteSize.x <= 0f || spriteSize.y <= 0f) return;
 
-            float targetWidth  = gem.Width  * cellSize;
-            float targetHeight = gem.Height * cellSize;
-
-            // Swap sprite axes when rotated so dimensions still map correctly
             float sWidth  = needsRotation ? spriteSize.y : spriteSize.x;
             float sHeight = needsRotation ? spriteSize.x : spriteSize.y;
 
             gemView.transform.localScale = new Vector3(
-                targetWidth  / sWidth,
-                targetHeight / sHeight,
+                gem.Width  * cellSize / sWidth,
+                gem.Height * cellSize / sHeight,
                 1f
             );
         }
@@ -119,18 +120,15 @@ namespace GridGame.Presentation
             Camera cam = targetCamera != null ? targetCamera : Camera.main;
             if (cam == null) return;
 
-            float centerX = (gridSystem.Width  - 1) * cellSize * 0.5f;
-            float centerY = (gridSystem.Height - 1) * cellSize * 0.5f;
-            cam.transform.position = new Vector3(centerX, centerY, cameraDepth);
+            cam.transform.position = new Vector3(
+                (gridSystem.Width  - 1) * cellSize * 0.5f,
+                (gridSystem.Height - 1) * cellSize * 0.5f,
+                cameraDepth
+            );
 
-            float orthoHeight = (gridSystem.Height * cellSize) * 0.5f;
-            float orthoWidth  = (gridSystem.Width  * cellSize) * 0.5f / cam.aspect;
+            float orthoHeight = gridSystem.Height * cellSize * 0.5f;
+            float orthoWidth  = gridSystem.Width  * cellSize * 0.5f / cam.aspect;
             cam.orthographicSize = Mathf.Max(orthoHeight, orthoWidth) * cameraFitPadding;
-        }
-
-        private static void HandleCellClicked(CellNode node)
-        {
-            node.Reveal();
         }
 
         private void OnValidate()
@@ -142,46 +140,30 @@ namespace GridGame.Presentation
         private void OnDrawGizmos()
         {
             if (_gridSystem == null) return;
-
             float halfCell = cellSize * 0.5f;
 
-            // Grid lines
             Gizmos.color = Color.gray;
             for (int x = 0; x <= _gridSystem.Width; x++)
             {
                 float xPos = x * cellSize - halfCell;
                 Gizmos.DrawLine(
                     transform.TransformPoint(new Vector3(xPos, -halfCell, 0f)),
-                    transform.TransformPoint(new Vector3(xPos, _gridSystem.Height * cellSize - halfCell, 0f))
-                );
+                    transform.TransformPoint(new Vector3(xPos, _gridSystem.Height * cellSize - halfCell, 0f)));
             }
             for (int y = 0; y <= _gridSystem.Height; y++)
             {
                 float yPos = y * cellSize - halfCell;
                 Gizmos.DrawLine(
                     transform.TransformPoint(new Vector3(-halfCell, yPos, 0f)),
-                    transform.TransformPoint(new Vector3(_gridSystem.Width * cellSize - halfCell, yPos, 0f))
-                );
+                    transform.TransformPoint(new Vector3(_gridSystem.Width * cellSize - halfCell, yPos, 0f)));
             }
 
-            // Gem bounds
             Gizmos.color = Color.green;
             foreach (var gem in _gridSystem.ActiveGems)
             {
                 if (gem.OccupiedCells.Count == 0) continue;
-
-                Vector3 center = new Vector3(
-                    gem.Origin.X * cellSize + (gem.Width  - 1) * halfCell,
-                    gem.Origin.Y * cellSize + (gem.Height - 1) * halfCell,
-                    0f
-                );
-
-                Vector3 size = new Vector3(
-                    gem.Width  * cellSize - gizmoShrink,
-                    gem.Height * cellSize - gizmoShrink,
-                    0.1f
-                );
-
+                Vector3 center = GetGemPosition(gem);
+                Vector3 size   = new Vector3(gem.Width * cellSize - gizmoShrink, gem.Height * cellSize - gizmoShrink, 0.1f);
                 Gizmos.DrawWireCube(transform.TransformPoint(center), size);
             }
         }

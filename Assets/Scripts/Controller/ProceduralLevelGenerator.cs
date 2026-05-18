@@ -56,8 +56,8 @@ namespace GridGame.Controller
                 {
                     int rx = UnityEngine.Random.Range(0, GridWidth);
                     int ry = UnityEngine.Random.Range(0, GridHeight);
-                    if (gridSystem.TryPlaceGem(width, height, new GridCoordinate(rx, ry)) != null)
-                        placed = true;
+                    var result = gridSystem.TryPlaceGem(width, height, new GridCoordinate(rx, ry));
+                    if (result.Success) placed = true;
                     attempts++;
                 }
             }

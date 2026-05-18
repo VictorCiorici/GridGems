@@ -2,11 +2,13 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using GridGame.Application;
 
 namespace GridGame.Controller
 {
     /// <summary>
-    /// Manages the game UI elements like progress text and win screen.
+    /// Manages all game UI. Accepts typed <see cref="GameState"/> and <see cref="GameProgress"/>
+    /// instead of raw booleans and integers, making the contract explicit and self-documenting.
     /// </summary>
     public class GameUIController : MonoBehaviour
     {
@@ -15,38 +17,27 @@ namespace GridGame.Controller
         [SerializeField] private GameObject winScreenPanel;
 
         /// <summary>
-        /// Sets up the UI with a restart callback.
+        /// Binds the restart action to the restart button. Call once during setup.
         /// </summary>
-        /// <param name="onRestart">Callback action for restart button.</param>
-        public void Setup(Action onRestart)
+        /// <param name="onRestart">Callback invoked when the restart button is pressed.</param>
+        public void Bind(Action onRestart)
         {
             restartButton.onClick.RemoveAllListeners();
             restartButton.onClick.AddListener(() => onRestart?.Invoke());
         }
 
         /// <summary>
-        /// Updates the progress text.
+        /// Refreshes all UI elements to reflect the current game state and progress.
         /// </summary>
-        /// <param name="current">Current gems found.</param>
-        /// <param name="total">Total gems to find.</param>
-        public void UpdateProgress(int current, int total)
+        /// <param name="state">The current <see cref="GameState"/>.</param>
+        /// <param name="progress">The current gem discovery progress.</param>
+        public void Refresh(GameState state, GameProgress progress)
         {
             if (progressText != null)
-            {
-                progressText.text = $"Gems Found: {current} / {total}";
-            }
-        }
+                progressText.text = $"Gems Found: {progress.Found} / {progress.Total}";
 
-        /// <summary>
-        /// Shows or hides the win screen.
-        /// </summary>
-        /// <param name="isVisible">True to show, false to hide.</param>
-        public void ShowWinScreen(bool isVisible)
-        {
             if (winScreenPanel != null)
-            {
-                winScreenPanel.SetActive(isVisible);
-            }
+                winScreenPanel.SetActive(state == GameState.Won);
         }
     }
 }
