@@ -15,6 +15,6 @@ MonoBehaviour:
   gemVisuals:
   - {fileID: 11400000, guid: 936f6dc7dcb9dae4499546c3d00414a7, type: 2}
   - {fileID: 11400000, guid: e1fd15bd169e20c488ddc05df59cd7c2, type: 2}
-  - {fileID: 11400000, guid: e1fd15bd169e20c488ddc05df59cd7c2, type: 2}
+  - {fileID: 11400000, guid: 8dac7ee9243f8d84482770805e6394b7, type: 2}
   - {fileID: 11400000, guid: 349275682f55e1f43933542752eda444, type: 2}
-  defaultVisual: {fileID: 0}
+  defaultVisual: {fileID: 11400000, guid: 349275682f55e1f43933542752eda444, type: 2}

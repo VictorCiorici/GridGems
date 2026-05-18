@@ -47,6 +47,7 @@ namespace GridGame.Controller
             gridInputHandler.Setup(_revealCellUseCase);
             gridView.OnCellViewSpawned += gridInputHandler.RegisterCell;
             uiController.Bind(StartNewGame);
+            uiController.BindNextLevel(LoadNextLevel);
         }
 
         private void Start()
@@ -68,6 +69,23 @@ namespace GridGame.Controller
 
         private ILevelGenerator CreateGenerator()
         {
+            // 1. Check if we are running in Campaign mode from Main Menu
+            if (GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null)
+            {
+                var campaign = GameSessionConfig.CurrentCampaign;
+                int index = GameSessionConfig.CurrentLevelIndex;
+                
+                if (index >= 0 && index < campaign.levels.Count)
+                {
+                    if (campaign.levels[index] != null)
+                    {
+                        return new PredefinedLevelGenerator(campaign.levels[index]);
+                    }
+                    UnityEngine.Debug.LogWarning($"GamePresenter: Level at index {index} is null in campaign. Falling back.", this);
+                }
+            }
+
+            // 2. Fallback or Standalone scene play: use inspector settings
             if (gameMode == GameMode.Predefined && levelData != null)
             {
                 return new PredefinedLevelGenerator(levelData);
@@ -85,7 +103,22 @@ namespace GridGame.Controller
         {
             if (_currentGrid == null) return;
             var progress = new GameProgress(_currentGrid.FoundGemsCount, _currentGrid.TotalGemsCount);
-            uiController.Refresh(_stateManager.Current, progress);
+            
+            bool isCampaign = GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null;
+            bool hasNextLevel = false;
+            
+            if (isCampaign)
+            {
+                hasNextLevel = GameSessionConfig.CurrentLevelIndex + 1 < GameSessionConfig.CurrentCampaign.levels.Count;
+            }
+
+            uiController.Refresh(_stateManager.Current, progress, isCampaign, hasNextLevel);
+        }
+
+        private void LoadNextLevel()
+        {
+            GameSessionConfig.CurrentLevelIndex++;
+            StartNewGame();
         }
 
         private void UnsubscribeFromCurrentGrid()

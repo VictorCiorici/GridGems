@@ -14,9 +14,11 @@ namespace GridGame.Controller
     {
         [SerializeField] private TextMeshProUGUI progressText;
         [SerializeField] private Button restartButton;
+        [SerializeField] private Button nextLevelButton;
         [SerializeField] private GameObject winScreenPanel;
 
         private Action _onRestart;
+        private Action _onNextLevel;
 
         /// <summary>
         /// Binds the restart action to the restart button. Call once during setup.
@@ -29,17 +31,30 @@ namespace GridGame.Controller
             restartButton.onClick.AddListener(HandleRestartClicked);
         }
 
+        public void BindNextLevel(Action onNextLevel)
+        {
+            _onNextLevel = onNextLevel;
+            if (nextLevelButton != null)
+            {
+                nextLevelButton.onClick.RemoveAllListeners();
+                nextLevelButton.onClick.AddListener(HandleNextLevelClicked);
+            }
+        }
+
         private void HandleRestartClicked()
         {
             _onRestart?.Invoke();
         }
 
+        private void HandleNextLevelClicked()
+        {
+            _onNextLevel?.Invoke();
+        }
+
         /// <summary>
         /// Refreshes all UI elements to reflect the current game state and progress.
         /// </summary>
-        /// <param name="state">The current <see cref="GameState"/>.</param>
-        /// <param name="progress">The current gem discovery progress.</param>
-        public void Refresh(GameState state, GameProgress progress)
+        public void Refresh(GameState state, GameProgress progress, bool isCampaign, bool hasNextLevel)
         {
             if (progressText != null)
             {
@@ -49,6 +64,11 @@ namespace GridGame.Controller
             if (winScreenPanel != null)
             {
                 winScreenPanel.SetActive(state == GameState.Won);
+            }
+
+            if (nextLevelButton != null)
+            {
+                nextLevelButton.gameObject.SetActive(state == GameState.Won && isCampaign && hasNextLevel);
             }
         }
     }
