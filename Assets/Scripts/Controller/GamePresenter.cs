@@ -75,6 +75,10 @@ namespace GridGame.Controller
                     {
                         if (gem == null) continue;
 
+                        bool shouldRotate = gem.canRotate && Random.value > 0.5f;
+                        int width = shouldRotate ? gem.height : gem.width;
+                        int height = shouldRotate ? gem.width : gem.height;
+
                         bool placed = false;
                         int attempts = 0;
                         while (!placed && attempts < 100)
@@ -82,7 +86,7 @@ namespace GridGame.Controller
                             int rx = Random.Range(0, defaultWidth);
                             int ry = Random.Range(0, defaultHeight);
 
-                            var result = _gridSystem.TryPlaceGem(gem.width, gem.height, new GridCoordinate(rx, ry));
+                            var result = _gridSystem.TryPlaceGem(width, height, new GridCoordinate(rx, ry));
                             if (result != null)
                             {
                                 placed = true;

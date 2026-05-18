@@ -67,8 +67,13 @@ namespace GridGame.Presentation
                     );
                     
                     gemView.transform.localPosition = gemPos;
-                    Sprite gemSprite = gemCollection != null ? gemCollection.GetSpriteForSize(gem.Width, gem.Height) : null;
+                    var (gemSprite, needsRotation) = gemCollection != null ? gemCollection.GetSpriteForSize(gem.Width, gem.Height) : (null, false);
                     gemView.Setup(gem, gemSprite);
+
+                    if (needsRotation)
+                    {
+                        gemView.transform.localRotation = Quaternion.Euler(0, 0, 90f);
+                    }
 
                     // Auto scale gem to fit its grid dimensions
                     if (gemSprite != null)
@@ -79,9 +84,13 @@ namespace GridGame.Presentation
                             float targetWidth = gem.Width * cellSize;
                             float targetHeight = gem.Height * cellSize;
                             
+                            // If rotated, we swap the sprite dimensions for scale calculation
+                            float sWidth = needsRotation ? spriteSize.y : spriteSize.x;
+                            float sHeight = needsRotation ? spriteSize.x : spriteSize.y;
+                            
                             gemView.transform.localScale = new Vector3(
-                                targetWidth / spriteSize.x,
-                                targetHeight / spriteSize.y,
+                                targetWidth / sWidth,
+                                targetHeight / sHeight,
                                 1f
                             );
                         }

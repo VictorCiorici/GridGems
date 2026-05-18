@@ -22,5 +22,10 @@ namespace GridGame.Config
         /// The sprite to display for this gem.
         /// </summary>
         public Sprite sprite;
+
+        /// <summary>
+        /// Whether this gem can be rotated by 90 degrees.
+        /// </summary>
+        public bool canRotate;
     }
 }
