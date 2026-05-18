@@ -24,9 +24,10 @@ namespace GridGame.Domain
         public CellNode[,] Cells { get; }
 
         /// <summary>
-        /// List of active gems on the grid.
+        /// Read-only view of the active gems on the grid.
         /// </summary>
-        public List<GemEntity> ActiveGems { get; }
+        public IReadOnlyList<GemEntity> ActiveGems => _activeGems;
+        private readonly List<GemEntity> _activeGems = new List<GemEntity>();
 
         /// <summary>
         /// Total number of gems placed on the grid.
@@ -51,14 +52,16 @@ namespace GridGame.Domain
         /// <summary>
         /// Initializes a new instance of the <see cref="GridSystem"/> class.
         /// </summary>
-        /// <param name="width">Width of the grid.</param>
-        /// <param name="height">Height of the grid.</param>
+        /// <param name="width">Width of the grid. Must be greater than zero.</param>
+        /// <param name="height">Height of the grid. Must be greater than zero.</param>
         public GridSystem(int width, int height)
         {
-            Width = width;
+            if (width <= 0)  throw new ArgumentOutOfRangeException(nameof(width),  "Grid width must be greater than zero.");
+            if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height), "Grid height must be greater than zero.");
+
+            Width  = width;
             Height = height;
-            Cells = new CellNode[width, height];
-            ActiveGems = new List<GemEntity>();
+            Cells  = new CellNode[width, height];
 
             for (int x = 0; x < width; x++)
             {
@@ -103,16 +106,14 @@ namespace GridGame.Domain
 
                     CellNode cell = GetCell(x, y);
                     if (cell == null || cell.IsOccupied)
-                    {
-                        return null; // Cannot place
-                    }
+                        return null;
+
                     targetCells.Add(cell);
                 }
             }
 
-            GemEntity gem = new GemEntity(Guid.NewGuid().ToString(), width, height);
-            gem.Initialize(targetCells);
-            ActiveGems.Add(gem);
+            GemEntity gem = new GemEntity(Guid.NewGuid().ToString(), width, height, targetCells);
+            _activeGems.Add(gem);
             gem.OnGemFound += HandleGemFound;
             TotalGemsCount++;
 
@@ -121,14 +122,12 @@ namespace GridGame.Domain
 
         private void HandleGemFound(GemEntity gem)
         {
-            ActiveGems.Remove(gem);
+            _activeGems.Remove(gem);
             FoundGemsCount++;
             OnGridChanged?.Invoke();
 
             if (FoundGemsCount == TotalGemsCount)
-            {
                 OnGameWon?.Invoke();
-            }
         }
     }
 }

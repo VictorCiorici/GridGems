@@ -19,8 +19,9 @@ namespace GridGame.Domain
 
         /// <summary>
         /// Indicates whether this cell is occupied by a gem.
+        /// Set via <see cref="Occupy"/> to preserve encapsulation.
         /// </summary>
-        public bool IsOccupied { get; set; }
+        public bool IsOccupied { get; private set; }
 
         /// <summary>
         /// Triggered when the state of the cell changes.
@@ -36,6 +37,15 @@ namespace GridGame.Domain
             Coordinate = coordinate;
             State = CellState.Covered;
             IsOccupied = false;
+        }
+
+        /// <summary>
+        /// Marks this cell as occupied by a gem.
+        /// Can only be set once; subsequent calls are ignored.
+        /// </summary>
+        public void Occupy()
+        {
+            IsOccupied = true;
         }
 
         /// <summary>

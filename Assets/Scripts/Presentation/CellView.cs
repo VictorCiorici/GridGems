@@ -7,6 +7,8 @@ namespace GridGame.Presentation
 {
     /// <summary>
     /// Handles the visual representation and interaction for a single grid cell.
+    /// Raises <see cref="OnCellClicked"/> on click instead of calling domain directly,
+    /// allowing a controller to intercept and apply game-state checks.
     /// </summary>
     public class CellView : MonoBehaviour, IPointerClickHandler
     {
@@ -14,6 +16,12 @@ namespace GridGame.Presentation
         [SerializeField] private SpriteRenderer coverRenderer;
 
         private CellNode _node;
+
+        /// <summary>
+        /// Raised when the player clicks this cell. Passes the underlying <see cref="CellNode"/>.
+        /// Subscribe in a controller to handle the reveal logic.
+        /// </summary>
+        public event Action<CellNode> OnCellClicked;
 
         /// <summary>
         /// Sets up the view with a corresponding domain node.
@@ -27,12 +35,13 @@ namespace GridGame.Presentation
         }
 
         /// <summary>
-        /// Handles the pointer click event to reveal the cell.
+        /// Handles the pointer click event. Raises <see cref="OnCellClicked"/> for external handling.
         /// </summary>
         /// <param name="eventData">Pointer event data.</param>
         public void OnPointerClick(PointerEventData eventData)
         {
-            _node?.Reveal();
+            if (_node != null)
+                OnCellClicked?.Invoke(_node);
         }
 
         private void UpdateVisuals(CellNode node)
