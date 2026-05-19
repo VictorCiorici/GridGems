@@ -1,8 +1,7 @@
-using UnityEngine;
-using GridGame.Controller;
 using GridGame.Config;
+using GridGame.Application;
 
-namespace GridGame.Application
+namespace GridGame.Controller
 {
     /// <summary>
     /// Static configuration for passing data between scenes and persisting player progress.
@@ -11,6 +10,12 @@ namespace GridGame.Application
     {
         private const string SaveLevelKey = "GridGame_CampaignLevel";
         private const string SaveDifficultyKey = "GridGame_Difficulty";
+
+        /// <summary>
+        /// The persistence service to use for saving and loading player progress.
+        /// Must be initialized at the application entry points (Composition Roots).
+        /// </summary>
+        public static IPersistenceService Persistence { get; set; }
 
         /// <summary>
         /// The mode to launch the game with.
@@ -33,41 +38,46 @@ namespace GridGame.Application
         public static int CurrentDifficultyIndex { get; set; } = 0;
 
         /// <summary>
-        /// Saves the campaign progress level index to PlayerPrefs.
+        /// Saves the campaign progress level index to the persistence store.
         /// </summary>
         public static void SaveCampaignProgress(int index)
         {
             CurrentLevelIndex = index;
-            PlayerPrefs.SetInt(SaveLevelKey, index);
-            PlayerPrefs.Save();
+            Persistence?.SetInt(SaveLevelKey, index);
+            Persistence?.Save();
         }
 
         /// <summary>
-        /// Loads the campaign progress level index from PlayerPrefs.
+        /// Loads the campaign progress level index from the persistence store.
         /// </summary>
         public static int LoadCampaignProgress()
         {
-            CurrentLevelIndex = PlayerPrefs.GetInt(SaveLevelKey, 0);
+            if (Persistence != null)
+            {
+                CurrentLevelIndex = Persistence.GetInt(SaveLevelKey, 0);
+            }
             return CurrentLevelIndex;
         }
 
         /// <summary>
-        /// Saves the selected difficulty index to PlayerPrefs.
+        /// Saves the selected difficulty index to the persistence store.
         /// </summary>
         public static void SaveDifficulty(int difficultyIndex)
         {
             CurrentDifficultyIndex = difficultyIndex;
-            PlayerPrefs.SetInt(SaveDifficultyKey, difficultyIndex);
-            PlayerPrefs.Save();
+            Persistence?.SetInt(SaveDifficultyKey, difficultyIndex);
+            Persistence?.Save();
         }
 
         /// <summary>
-        /// Loads the selected difficulty index from PlayerPrefs.
+        /// Loads the selected difficulty index from the persistence store.
         /// </summary>
         public static int LoadDifficulty()
         {
-            // Default to index 0 (which you can configure as Normal, Easy, etc. in the scriptable object)
-            CurrentDifficultyIndex = PlayerPrefs.GetInt(SaveDifficultyKey, 0);
+            if (Persistence != null)
+            {
+                CurrentDifficultyIndex = Persistence.GetInt(SaveDifficultyKey, 0);
+            }
             return CurrentDifficultyIndex;
         }
 

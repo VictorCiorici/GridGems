@@ -1,0 +1,20 @@
+{
+    "name": "GridGame.Controller",
+    "rootNamespace": "GridGame.Controller",
+    "references": [
+        "GridGame.Domain",
+        "GridGame.Application",
+        "GridGame.Config",
+        "GridGame.Presentation",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

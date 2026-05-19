@@ -28,6 +28,9 @@ namespace GridGame.Controller
                 Debug.LogError("MainMenuController: Difficulty Settings is not assigned!", this);
             }
 
+            // Setup persistence abstraction
+            GameSessionConfig.Persistence = new PlayerPrefsPersistenceService();
+
             // Sync values from PlayerPrefs
             GameSessionConfig.LoadDifficulty();
             GameSessionConfig.LoadCampaignProgress();
@@ -56,7 +59,7 @@ namespace GridGame.Controller
                 return;
             }
 
-            if (campaignData.levels.Count == 0)
+            if (campaignData.Levels.Count == 0)
             {
                 Debug.LogError("MainMenuController: Campaign has no levels!", this);
                 return;
@@ -64,9 +67,9 @@ namespace GridGame.Controller
 
             // Sync and clamp level index
             int savedIndex = GameSessionConfig.LoadCampaignProgress();
-            if (savedIndex >= campaignData.levels.Count)
+            if (savedIndex >= campaignData.Levels.Count)
             {
-                savedIndex = campaignData.levels.Count - 1;
+                savedIndex = campaignData.Levels.Count - 1;
             }
 
             GameSessionConfig.Reset();
@@ -124,7 +127,7 @@ namespace GridGame.Controller
             if (campaignProgressDisplay != null)
             {
                 int currentLevelIndex = GameSessionConfig.CurrentLevelIndex;
-                int totalLevels = campaignData != null ? campaignData.levels.Count : 0;
+                int totalLevels = campaignData != null ? campaignData.Levels.Count : 0;
                 campaignProgressDisplay.text = $"Campaign Level: {currentLevelIndex + 1} / {totalLevels}";
             }
         }

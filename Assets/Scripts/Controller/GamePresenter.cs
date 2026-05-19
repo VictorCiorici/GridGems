@@ -54,6 +54,9 @@ namespace GridGame.Controller
             gridInputHandler.Setup(_revealCellUseCase);
             gridView.OnCellViewSpawned += gridInputHandler.RegisterCell;
 
+            // Setup persistence abstraction
+            GameSessionConfig.Persistence = new PlayerPrefsPersistenceService();
+
             // Load saved settings
             GameSessionConfig.LoadDifficulty();
             GameSessionConfig.LoadCampaignProgress();
@@ -78,7 +81,7 @@ namespace GridGame.Controller
             
             _currentGrid = _startNewGameUseCase.Execute(CreateGenerator(), difficultyIndex);
             _currentGrid.OnGemFound += _onGemFoundHandler;
-            gridView.Initialize(_currentGrid, gemCollection);
+            gridView.Initialize(_currentGrid, new GemSpriteResolver(gemCollection));
             RefreshUI();
         }
 
@@ -90,11 +93,11 @@ namespace GridGame.Controller
                 var campaign = GameSessionConfig.CurrentCampaign;
                 int index = GameSessionConfig.CurrentLevelIndex;
                 
-                if (index >= 0 && index < campaign.levels.Count)
+                if (index >= 0 && index < campaign.Levels.Count)
                 {
-                    if (campaign.levels[index] != null)
+                    if (campaign.Levels[index] != null)
                     {
-                        return new PredefinedLevelGenerator(campaign.levels[index]);
+                        return new PredefinedLevelGenerator(campaign.Levels[index]);
                     }
                     UnityEngine.Debug.LogWarning($"GamePresenter: Level at index {index} is null in campaign. Falling back.", this);
                 }
@@ -118,7 +121,7 @@ namespace GridGame.Controller
                 {
                     // Save campaign progress when completing a level
                     int nextIndex = GameSessionConfig.CurrentLevelIndex + 1;
-                    if (nextIndex < GameSessionConfig.CurrentCampaign.levels.Count)
+                    if (nextIndex < GameSessionConfig.CurrentCampaign.Levels.Count)
                     {
                         GameSessionConfig.SaveCampaignProgress(nextIndex);
                     }
@@ -143,7 +146,7 @@ namespace GridGame.Controller
             
             if (isCampaign)
             {
-                hasNextLevel = GameSessionConfig.CurrentLevelIndex + 1 < GameSessionConfig.CurrentCampaign.levels.Count;
+                hasNextLevel = GameSessionConfig.CurrentLevelIndex + 1 < GameSessionConfig.CurrentCampaign.Levels.Count;
             }
 
             uiController.Refresh(_stateManager.Current, progress, isCampaign, hasNextLevel);
@@ -153,7 +156,7 @@ namespace GridGame.Controller
         {
             // Level index was already incremented/saved in OnGameStateChanged, but let's sync index double-check
             int nextIndex = GameSessionConfig.CurrentLevelIndex;
-            if (GameSessionConfig.CurrentCampaign != null && nextIndex < GameSessionConfig.CurrentCampaign.levels.Count)
+            if (GameSessionConfig.CurrentCampaign != null && nextIndex < GameSessionConfig.CurrentCampaign.Levels.Count)
             {
                 StartNewGame();
             }

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using GridGame.Domain;
 using GridGame.Config;
+using GridGame.Application;
 
 namespace GridGame.Controller
 {

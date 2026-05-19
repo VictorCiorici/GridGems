@@ -1,6 +1,7 @@
 using System;
 using GridGame.Domain;
 using GridGame.Config;
+using GridGame.Application;
 
 namespace GridGame.Controller
 {
@@ -29,9 +30,13 @@ namespace GridGame.Controller
         /// <inheritdoc/>
         public void Populate(GridSystem gridSystem)
         {
-            foreach (var gem in _levelData.gems)
+            foreach (var gem in _levelData.Gems)
             {
-                gridSystem.TryPlaceGem(gem.width, gem.height, new GridCoordinate(gem.origin.x, gem.origin.y));
+                var result = gridSystem.TryPlaceGem(gem.width, gem.height, new GridCoordinate(gem.origin.x, gem.origin.y));
+                if (!result.Success)
+                {
+                    UnityEngine.Debug.LogError($"[PredefinedLevelGenerator] Failed to place predefined gem of size {gem.width}x{gem.height} at origin ({gem.origin.x}, {gem.origin.y}). Reason: {result.FailureReason}");
+                }
             }
         }
     }

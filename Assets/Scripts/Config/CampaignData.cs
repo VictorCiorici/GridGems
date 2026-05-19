@@ -9,10 +9,22 @@ namespace GridGame.Config
     [CreateAssetMenu(fileName = "NewCampaign", menuName = "GridGame/Campaign")]
     public class CampaignData : ScriptableObject
     {
+        [SerializeField]
+        private List<LevelData> levels = new List<LevelData>();
+
         /// <summary>
-        /// The list of levels in this campaign.
+        /// The list of levels in this campaign (read-only).
         /// </summary>
-        public List<LevelData> levels = new List<LevelData>();
+        public IReadOnlyList<LevelData> Levels => levels;
+
+        /// <summary>
+        /// Sets the list of levels in this campaign.
+        /// </summary>
+        /// <param name="newLevels">The list of levels to set.</param>
+        public void SetLevels(List<LevelData> newLevels)
+        {
+            levels = newLevels ?? new List<LevelData>();
+        }
 
 #if UNITY_EDITOR
         private void OnValidate()

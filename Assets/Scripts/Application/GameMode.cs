@@ -1,4 +1,4 @@
-namespace GridGame.Controller
+namespace GridGame.Application
 {
     /// <summary>
     /// Defines the mode in which gems are placed on the grid.

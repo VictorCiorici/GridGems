@@ -1,6 +1,6 @@
 using GridGame.Domain;
 
-namespace GridGame.Controller
+namespace GridGame.Application
 {
     /// <summary>
     /// Defines a strategy for populating a GridSystem with gems.

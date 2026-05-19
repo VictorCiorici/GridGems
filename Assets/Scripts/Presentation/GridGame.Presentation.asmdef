@@ -1,0 +1,18 @@
+{
+    "name": "GridGame.Presentation",
+    "rootNamespace": "GridGame.Presentation",
+    "references": [
+        "GridGame.Domain",
+        "GridGame.Application",
+        "GridGame.Config"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

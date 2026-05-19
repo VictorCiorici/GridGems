@@ -46,7 +46,7 @@ namespace GridGame.Editor
 
             // 3. Create CampaignData asset
             CampaignData campaign = ScriptableObject.CreateInstance<CampaignData>();
-            campaign.levels = new List<LevelData>();
+            List<LevelData> levelsList = new List<LevelData>();
 
             // 4. Generate 500 levels
             for (int i = 1; i <= 500; i++)
@@ -57,8 +57,9 @@ namespace GridGame.Editor
                 string levelPath = $"{OutputFolder}/Level_{i:D3}.asset";
                 
                 AssetDatabase.CreateAsset(level, levelPath);
-                campaign.levels.Add(level);
+                levelsList.Add(level);
             }
+            campaign.SetLevels(levelsList);
 
             // 5. Save Campaign
             AssetDatabase.CreateAsset(campaign, CampaignPath);
@@ -73,7 +74,7 @@ namespace GridGame.Editor
         private static LevelData GenerateSingleLevel(int levelIndex, GemCollection collection)
         {
             LevelData level = ScriptableObject.CreateInstance<LevelData>();
-            level.gems = new List<GemPlacementData>();
+            List<GemPlacementData> gemsList = new List<GemPlacementData>();
 
             // Determine difficulty parameters based on level index
             int gridWidth;
@@ -171,10 +172,11 @@ namespace GridGame.Editor
                         width = w,
                         height = h
                     };
-                    level.gems.Add(placement);
+                    gemsList.Add(placement);
                     placedCount++;
                 }
             }
+            level.SetGems(gemsList);
 
             return level;
         }

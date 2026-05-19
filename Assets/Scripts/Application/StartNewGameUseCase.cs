@@ -1,6 +1,5 @@
 using System;
 using GridGame.Domain;
-using GridGame.Controller;
 
 namespace GridGame.Application
 {
