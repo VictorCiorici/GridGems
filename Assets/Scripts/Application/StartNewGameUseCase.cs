@@ -29,14 +29,18 @@ namespace GridGame.Application
         /// Creates and populates a new grid, then starts the game session.
         /// </summary>
         /// <param name="generator">The strategy that determines grid size and gem placement.</param>
+        /// <param name="difficultyIndex">The difficulty index setting which controls allowed mistakes.</param>
         /// <returns>The fully populated <see cref="GridSystem"/> ready for play.</returns>
-        public GridSystem Execute(ILevelGenerator generator)
+        public GridSystem Execute(ILevelGenerator generator, int difficultyIndex)
         {
-            if (generator == null) throw new ArgumentNullException(nameof(generator));
+            if (generator == null)
+            {
+                throw new ArgumentNullException(nameof(generator));
+            }
 
             var grid = new GridSystem(generator.GridWidth, generator.GridHeight, _idGenerator);
             generator.Populate(grid);
-            _stateManager.StartGame(grid, _winCondition);
+            _stateManager.StartGame(grid, _winCondition, difficultyIndex);
             return grid;
         }
     }

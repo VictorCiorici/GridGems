@@ -1,15 +1,15 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using GridGame.Domain;
 using GridGame.Application;
 using GridGame.Presentation;
 using GridGame.Config;
-using GridGame.Controller;
 
 namespace GridGame.Controller
 {
     /// <summary>
     /// Unity bootstrap and composition root. Creates and wires all Application-layer services.
-    /// Contains no game logic — delegates entirely to use cases and reacts to state changes.
+    /// Reacts to state changes and coordinates scene transitions.
     /// </summary>
     public class GamePresenter : MonoBehaviour
     {
@@ -26,6 +26,7 @@ namespace GridGame.Controller
         [Header("Procedural Settings")]
         [SerializeField] private int defaultWidth = 6;
         [SerializeField] private int defaultHeight = 6;
+        [SerializeField] private GridGame.Config.DifficultySettings difficultySettings;
 
         // Application services — created in Awake, never replaced
         private GameStateManager _stateManager;
@@ -38,16 +39,26 @@ namespace GridGame.Controller
 
         private void Awake()
         {
-            _stateManager = new GameStateManager();
+            if (difficultySettings == null)
+            {
+                UnityEngine.Debug.LogError("DifficultySettings is not assigned in GamePresenter!");
+            }
+
+            _stateManager = new GameStateManager(difficultySettings);
             _revealCellUseCase = new RevealCellUseCase(_stateManager);
             _startNewGameUseCase = new StartNewGameUseCase(_stateManager, new AllGemsFoundWinCondition(), new GuidIdGenerator());
 
             _stateManager.OnStateChanged += OnGameStateChanged;
+            _stateManager.OnMistakeMade += RefreshUI;
             _onGemFoundHandler = _ => RefreshUI();
             gridInputHandler.Setup(_revealCellUseCase);
             gridView.OnCellViewSpawned += gridInputHandler.RegisterCell;
-            uiController.Bind(StartNewGame);
-            uiController.BindNextLevel(LoadNextLevel);
+
+            // Load saved settings
+            GameSessionConfig.LoadDifficulty();
+            GameSessionConfig.LoadCampaignProgress();
+
+            uiController.BindActions(StartNewGame, LoadNextLevel, ReturnToMainMenu);
         }
 
         private void Start()
@@ -61,7 +72,11 @@ namespace GridGame.Controller
         public void StartNewGame()
         {
             UnsubscribeFromCurrentGrid();
-            _currentGrid = _startNewGameUseCase.Execute(CreateGenerator());
+            
+            // Get current selected difficulty index
+            int difficultyIndex = GameSessionConfig.CurrentDifficultyIndex;
+            
+            _currentGrid = _startNewGameUseCase.Execute(CreateGenerator(), difficultyIndex);
             _currentGrid.OnGemFound += _onGemFoundHandler;
             gridView.Initialize(_currentGrid, gemCollection);
             RefreshUI();
@@ -94,15 +109,34 @@ namespace GridGame.Controller
             return new ProceduralLevelGenerator(defaultWidth, defaultHeight, gemCollection);
         }
 
-        private void OnGameStateChanged(GameState _) 
+        private void OnGameStateChanged(GameState state) 
         {
+            if (state == GameState.Won)
+            {
+                bool isCampaign = GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null;
+                if (isCampaign)
+                {
+                    // Save campaign progress when completing a level
+                    int nextIndex = GameSessionConfig.CurrentLevelIndex + 1;
+                    if (nextIndex < GameSessionConfig.CurrentCampaign.levels.Count)
+                    {
+                        GameSessionConfig.SaveCampaignProgress(nextIndex);
+                    }
+                }
+            }
+
             RefreshUI();
         }
 
         private void RefreshUI()
         {
             if (_currentGrid == null) return;
-            var progress = new GameProgress(_currentGrid.FoundGemsCount, _currentGrid.TotalGemsCount);
+            var progress = new GameProgress(
+                _currentGrid.FoundGemsCount, 
+                _currentGrid.TotalGemsCount, 
+                _stateManager.MistakesMade, 
+                _stateManager.MistakesAllowed
+            );
             
             bool isCampaign = GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null;
             bool hasNextLevel = false;
@@ -117,8 +151,17 @@ namespace GridGame.Controller
 
         private void LoadNextLevel()
         {
-            GameSessionConfig.CurrentLevelIndex++;
-            StartNewGame();
+            // Level index was already incremented/saved in OnGameStateChanged, but let's sync index double-check
+            int nextIndex = GameSessionConfig.CurrentLevelIndex;
+            if (GameSessionConfig.CurrentCampaign != null && nextIndex < GameSessionConfig.CurrentCampaign.levels.Count)
+            {
+                StartNewGame();
+            }
+        }
+
+        private void ReturnToMainMenu()
+        {
+            SceneManager.LoadScene("main");
         }
 
         private void UnsubscribeFromCurrentGrid()
@@ -136,6 +179,7 @@ namespace GridGame.Controller
             if (_stateManager != null)
             {
                 _stateManager.OnStateChanged -= OnGameStateChanged;
+                _stateManager.OnMistakeMade -= RefreshUI;
             }
 
             if (gridView != null)
