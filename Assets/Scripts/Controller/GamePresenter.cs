@@ -33,6 +33,10 @@ namespace GridGame.Controller
         private RevealCellUseCase _revealCellUseCase;
         private StartNewGameUseCase _startNewGameUseCase;
 
+        // SRP sub-components
+        private LevelGeneratorFactory _levelGeneratorFactory;
+        private GameUIAdapter _uiAdapter;
+
         // Tracks the active grid for progress queries
         private GridSystem _currentGrid;
         private System.Action<GridGame.Domain.GemEntity> _onGemFoundHandler;
@@ -44,24 +48,32 @@ namespace GridGame.Controller
                 UnityEngine.Debug.LogError("DifficultySettings is not assigned in GamePresenter!");
             }
 
+            // 1. Create pure Domain/Application layer services
             _stateManager = new GameStateManager(difficultySettings);
             _revealCellUseCase = new RevealCellUseCase(_stateManager);
             _startNewGameUseCase = new StartNewGameUseCase(_stateManager, new AllGemsFoundWinCondition(), new GuidIdGenerator());
 
+            // 2. Instantiate decoupled helpers
+            _levelGeneratorFactory = new LevelGeneratorFactory(defaultWidth, defaultHeight, gemCollection);
+            _uiAdapter = new GameUIAdapter(uiController, _stateManager);
+
+            // 3. Connect event subscriptions
             _stateManager.OnStateChanged += OnGameStateChanged;
             _stateManager.OnMistakeMade += RefreshUI;
             _onGemFoundHandler = _ => RefreshUI();
+            
             gridInputHandler.Setup(_revealCellUseCase);
             gridView.OnCellViewSpawned += gridInputHandler.RegisterCell;
 
-            // Setup persistence abstraction
+            // 4. Setup persistence abstraction
             GameSessionConfig.Persistence = new PlayerPrefsPersistenceService();
 
-            // Load saved settings
+            // 5. Load saved settings
             GameSessionConfig.LoadDifficulty();
             GameSessionConfig.LoadCampaignProgress();
 
-            uiController.BindActions(StartNewGame, LoadNextLevel, ReturnToMainMenu);
+            // 6. Bind UI Actions
+            _uiAdapter.BindActions(StartNewGame, LoadNextLevel, ReturnToMainMenu);
         }
 
         private void Start()
@@ -79,37 +91,13 @@ namespace GridGame.Controller
             // Get current selected difficulty index
             int difficultyIndex = GameSessionConfig.CurrentDifficultyIndex;
             
-            _currentGrid = _startNewGameUseCase.Execute(CreateGenerator(), difficultyIndex);
+            // Delegate level generator resolution to the factory
+            var generator = _levelGeneratorFactory.CreateGenerator(gameMode, levelData);
+            
+            _currentGrid = _startNewGameUseCase.Execute(generator, difficultyIndex);
             _currentGrid.OnGemFound += _onGemFoundHandler;
             gridView.Initialize(_currentGrid, new GemSpriteResolver(gemCollection));
             RefreshUI();
-        }
-
-        private ILevelGenerator CreateGenerator()
-        {
-            // 1. Check if we are running in Campaign mode from Main Menu
-            if (GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null)
-            {
-                var campaign = GameSessionConfig.CurrentCampaign;
-                int index = GameSessionConfig.CurrentLevelIndex;
-                
-                if (index >= 0 && index < campaign.Levels.Count)
-                {
-                    if (campaign.Levels[index] != null)
-                    {
-                        return new PredefinedLevelGenerator(campaign.Levels[index]);
-                    }
-                    UnityEngine.Debug.LogWarning($"GamePresenter: Level at index {index} is null in campaign. Falling back.", this);
-                }
-            }
-
-            // 2. Fallback or Standalone scene play: use inspector settings
-            if (gameMode == GameMode.Predefined && levelData != null)
-            {
-                return new PredefinedLevelGenerator(levelData);
-            }
-
-            return new ProceduralLevelGenerator(defaultWidth, defaultHeight, gemCollection);
         }
 
         private void OnGameStateChanged(GameState state) 
@@ -133,23 +121,7 @@ namespace GridGame.Controller
 
         private void RefreshUI()
         {
-            if (_currentGrid == null) return;
-            var progress = new GameProgress(
-                _currentGrid.FoundGemsCount, 
-                _currentGrid.TotalGemsCount, 
-                _stateManager.MistakesMade, 
-                _stateManager.MistakesAllowed
-            );
-            
-            bool isCampaign = GameSessionConfig.Mode == GameMode.Predefined && GameSessionConfig.CurrentCampaign != null;
-            bool hasNextLevel = false;
-            
-            if (isCampaign)
-            {
-                hasNextLevel = GameSessionConfig.CurrentLevelIndex + 1 < GameSessionConfig.CurrentCampaign.Levels.Count;
-            }
-
-            uiController.Refresh(_stateManager.Current, progress, isCampaign, hasNextLevel);
+            _uiAdapter.Refresh(_currentGrid);
         }
 
         private void LoadNextLevel()
